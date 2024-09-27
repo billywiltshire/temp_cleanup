@@ -2,11 +2,16 @@ import pandas as pd
 import datetime as dt
 
 def create_sample_df(df, columns_mapping):
+    """
+    Function loops through input dataset and creates a new dataframe based on the input
+    columns in the config.json file.
+    """
 
     records = []
 
     c = 1
 
+    # Loop though raw data and create a dictionary for each package.
     for index, row in df.iterrows():
     
         record = {}

@@ -6,6 +6,7 @@ def import_data(file_names, column_mapping, dims_combined, is_lbs):
 
     df = pd.DataFrame()
 
+    # Loop through input file list and create a single DataFrame
     for file in file_names:
         file_df = pd.read_csv(file,
                     dtype={
@@ -15,11 +16,11 @@ def import_data(file_names, column_mapping, dims_combined, is_lbs):
                 )
         df = pd.concat([df, file_df], ignore_index=True)
 
-    # Take sample before cleaning to reduce compute and improve performance
-    # if len(df) > 15000:
-    #     df = df.sample(15000)
-    # else:
-    #     df = df
+    #Take sample before cleaning to reduce compute and improve performance
+    if len(df) > 15000:
+        df = df.sample(15000)
+    else:
+        df = df
 
     df[column_mapping['postal_code']] = clean_zip(df, column_mapping['postal_code'])
 
@@ -43,14 +44,23 @@ def import_data(file_names, column_mapping, dims_combined, is_lbs):
     return df
 
 def clean_zip(df, zip_column):
+    """
+    Ensure that zipcode column contains only results of len 5.
+    CSVs often cut of leading 0's assuming they are numbers, not
+    strings. This function loops through zipcode column to append
+    leading zeros and remove zip code extension if present.
+    """
 
     zips = df[zip_column].astype(str).to_list()
 
     def append_leading_zero(zipcode):
+        """
+        Function to be applied to individual zipcodes in the list. Removes
+        zipcode extension and applies leading zeros depending on string len.
+        """
         if zipcode.find('-') > 0:
             zip = zipcode.split('-')
             zipcode = zip[0]
-            # zipcode = zipcode[:5]
         else:
             zipcode = zipcode[:5] if len(zipcode) > 5 else zipcode
 
@@ -66,13 +76,19 @@ def clean_zip(df, zip_column):
     return cleaned_zips
 
 def clean_weight(df, weight_column, is_lbs):
+    """
+    Weights need to be in lbs for the simulation. This function takes in weights column,
+    converts to number if string, and converts oz to lbs if specified in config.
+    """
     
+    # Tests if weight column is numeric or string in nature. Converts if strings.
     try:
         weights = df[weight_column].astype(float).to_list()
     except:
         weights = df[weight_column].astype(str).to_list()
         weights = [convert_weight_to_pounds(weight) for weight in weights]
 
+    # If weights provided in oz, converts to lbs rounded up to nearest tenth of a pound.
     if not is_lbs:
         weights_cleaned = [round(math.ceil(weight) / 16, 2) for weight in weights]
     else:
@@ -109,6 +125,10 @@ def convert_weight_to_pounds(weight_str):
     return total_pounds
 
 def clean_dims(df, dims_column, delimiter):
+    """
+    If package dims are presented in a single column separated by a delimiter,
+    this function unpacks the length, width, and height into separate columns.
+    """
 
     package_dimensions = df[dims_column].astype(str).to_list()
 
@@ -132,6 +152,9 @@ def clean_dims(df, dims_column, delimiter):
     return lengths, widths, heights
 
 def clean_address_components(df, address_column):
+    """
+    Converts address components to uppercase for consistency in output dataset.
+    """
 
     address_part = df[address_column].astype(str).to_list()
 

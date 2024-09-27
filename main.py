@@ -1,6 +1,5 @@
 import pandas as pd
 import datetime as dt
-import sys
 import json
 from functions.prep_data import import_data
 from functions.agg_data import create_sample_df
@@ -12,7 +11,6 @@ d.close()
 output_file = f"sample_datasets/{config['output_file']}"
 
 files = config['input_files']
-
 
 columns_mapping = {
   'ship_date': None if config['input_columns']['ship_date'] == 'None' else config['input_columns']['ship_date'],
@@ -42,7 +40,6 @@ df = import_data(
   )
 
 sample_df = create_sample_df(df, columns_mapping)
-
 
 print(len(sample_df))
 print(sample_df.head(50))
