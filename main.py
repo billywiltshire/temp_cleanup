@@ -47,5 +47,5 @@ sample_df = create_sample_df(df, columns_mapping)
 print(len(sample_df))
 print(sample_df.head(50))
 
-# sample_df.to_csv('output/data.csv', index=False)
-# sample_df.to_csv(output_file, index=False)
+sample_df.to_csv('output/data.csv', index=False)
+sample_df.to_csv(output_file, index=False)
