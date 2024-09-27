@@ -1,0 +1,23 @@
+{
+    "input_files": [
+        "input_data/20240926173134_606ecad3a7b53802990bf38b32ee2daf.csv"
+    ],
+    "output_file": "moonbrew_final_sample.csv",
+    "input_columns": {
+        "ship_date": "None",
+        "tracking_number": "Order ID",
+        "city": "City",
+        "state": "State",
+        "postal_code": "Zip",
+        "country": "Country",
+        "weight": "Weight (lb)",
+        "dimensions": "None",
+        "length": "Length (in)",
+        "width": "Width (in)",
+        "height": "Height (in)"
+    },
+    "additional_params": {
+        "dims_combined": "False",
+        "is_lbs": "True"
+    }
+}

@@ -1,0 +1,4 @@
+input_data/*
+sample_datasets/*
+output/*
+__pycache__/
