@@ -43,9 +43,8 @@ def create_sample_df(df, columns_mapping):
 
     sample_df = pd.DataFrame(records)
 
-    #Filter out any destinations outside US
-    sample_df = sample_df.loc[sample_df['country'] == 'US', :]
     #Filter out rows with un-parseable dims
+    sample_df = sample_df.dropna(subset=['weight', 'length', 'width', 'height'], how='any')
     sample_df = sample_df.loc[sample_df['length'] != 'N/A', :]
     #Drop rows w/ duplicate tracking numbers
     sample_df = sample_df.drop_duplicates('tracking_number')

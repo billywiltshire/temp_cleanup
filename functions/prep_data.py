@@ -16,9 +16,34 @@ def import_data(file_names, column_mapping, dims_combined, is_lbs):
                 )
         df = pd.concat([df, file_df], ignore_index=True)
 
+    df = df.drop_duplicates(column_mapping['tracking_number'])
+    
+    if dims_combined == 'False':
+        df.dropna(subset=[column_mapping['weight'],
+                        column_mapping['length'],
+                        column_mapping['width'],
+                        column_mapping['height']],
+                        how='any')
+    else:
+        df.dropna(subset=[column_mapping['weight']], how='any')
+
+    #Filter out any destinations outside US
+    df = df.loc[((df[column_mapping['country']] == 'US') |\
+                (df[column_mapping['country']] == 'United States') |\
+                (df[column_mapping['country']] == 'UNITED STATES')), :]
+
     #Take sample before cleaning to reduce compute and improve performance
     if len(df) > 15000:
-        df = df.sample(15000)
+        df['service_level'] = df[column_mapping['weight']].map(map_service_level)
+
+        weights = df['service_level'].value_counts(normalize=True)
+        print(weights)
+
+        df = df.set_index('service_level')
+
+        df = df.sample(n=15000, weights=weights).reset_index()
+        df = df.drop('service_level', axis=1)
+        print(df.head())
     else:
         df = df
 
@@ -32,7 +57,7 @@ def import_data(file_names, column_mapping, dims_combined, is_lbs):
         if component == None:
             continue
         else:
-            df[component] = df[column_mapping['city']] = clean_address_components(df, component)
+            df[component] = clean_address_components(df, component)
 
     if dims_combined == True:
         df['length'], df['width'], df['height'] = clean_dims(df, column_mapping['dimensions'], 'x')
@@ -106,21 +131,28 @@ def convert_weight_to_pounds(weight_str):
     Returns:
     float: The weight in pounds
     """
+    
     # Regular expression to extract pounds and ounces
-    pattern = r'(\d+)lb\s*(\d*)oz'
+    # pattern = r'(\d+)lb\s*(\d*)oz'
+    pattern = r'(?:(\d+)\s*lb)?\s*(?:(\d+(\.\d+)?)\s*oz)?'
     
     # Search the weight string using the pattern
-    match = re.search(pattern, weight_str.strip())
+    # match = re.search(pattern, weight_str.strip())
+    match = re.fullmatch(pattern, weight_str.strip())
     
     if match:
         # Extract pounds and ounces from the match groups
-        pounds = int(match.group(1))
-        ounces = int(match.group(2)) if match.group(2) else 0
+        # pounds = float(match.group(1))
+        # ounces = float(match.group(2)) if match.group(2) else 0
+
+        # Extract pounds and ounces
+        pounds = int(match.group(1)) if match.group(1) else 0  # Default to 0 if pounds are not provided
+        ounces = float(match.group(2)) if match.group(2) else 0.0  # Default to 0.0 if ounces are not provided
         
         # Convert ounces to pounds (1 pound = 16 ounces)
         total_pounds = pounds + ounces / 16.0
     else:
-        total_pounds = weight_str
+        total_pounds = float(weight_str)
         
     return total_pounds
 
@@ -161,3 +193,15 @@ def clean_address_components(df, address_column):
     cleaned_parts = [part.strip().upper() for part in address_part]
 
     return cleaned_parts
+
+def map_service_level(x):
+    """
+    Maps service level to records in the data to apply weights to the sample.
+    """
+
+    if x < 1:
+        return 'sub_1lb'
+    elif x < 10:
+        return 'economy'
+    else:
+        return 'ground'

@@ -1,20 +1,20 @@
 {
     "input_files": [
-        "input_data/20240926173134_606ecad3a7b53802990bf38b32ee2daf.csv"
+        "input_data/solawave_order_data.csv"
     ],
-    "output_file": "moonbrew_final_sample.csv",
+    "output_file": "solawave_sample_v2.csv",
     "input_columns": {
         "ship_date": "None",
-        "tracking_number": "Order ID",
-        "city": "City",
-        "state": "State",
-        "postal_code": "Zip",
-        "country": "Country",
-        "weight": "Weight (lb)",
+        "tracking_number": "External Order ID",
+        "city": "None",
+        "state": "Ship State",
+        "postal_code": "Ship Zip",
+        "country": "Ship Country",
+        "weight": "Ship Weight",
         "dimensions": "None",
-        "length": "Length (in)",
-        "width": "Width (in)",
-        "height": "Height (in)"
+        "length": "Length",
+        "width": "Width",
+        "height": "Height"
     },
     "additional_params": {
         "dims_combined": "False",
